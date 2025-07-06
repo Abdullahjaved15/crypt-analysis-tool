@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Educational Cryptography Analysis Tool - Learn and analyze various cipher methods">
+    <title>Crypt Analysis Tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-lock"></i> Crypt Analysis Tool</h1>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-cipher="caesar">
+                <i class="fas fa-rotate"></i> Caesar
+            </button>
+            <button class="tab-btn" data-cipher="vigenere">
+                <i class="fas fa-key"></i> Vigenère
+            </button>
+            <button class="tab-btn" data-cipher="affine">
+                <i class="fas fa-calculator"></i> Affine
+            </button>
+            <button class="tab-btn" data-cipher="playfair">
+                <i class="fas fa-th"></i> Playfair
+            </button>
+            <button class="tab-btn" data-cipher="monoalphabetic">
+                <i class="fas fa-exchange-alt"></i> Mono-alphabetic
+            </button>
+            <button class="tab-btn" data-cipher="railfence">
+                <i class="fas fa-railroad"></i> Rail Fence
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Caesar Cipher Tab -->
+            <div id="caesar" class="cipher-panel active">
+                <div class="panel-header">
+                    <h2>Caesar Cipher</h2>
+                    <p>Classic substitution cipher with a fixed shift</p>
+                </div>
+                
+                <div class="cipher-controls">
+                    <div class="control-group">
+                        <label for="caesar-operation">Operation:</label>
+                        <select id="caesar-operation">
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                            <option value="brute-force">Brute Force Attack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="caesar-shift-group">
+                        <label for="caesar-shift">Shift:</label>
+                        <input type="number" id="caesar-shift" min="0" max="25" value="3">
+                    </div>
+                </div>
+
+                <div class="io-section">
+                    <div class="input-section">
+                        <label for="caesar-input">
+                            <i class="fas fa-edit"></i> Input Text:
+                        </label>
+                        <textarea id="caesar-input" placeholder="Enter your text here..."></textarea>
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="btn primary" onclick="processCaesar()">
+                            <i class="fas fa-play"></i> Process
+                        </button>
+                        <button class="btn secondary" onclick="clearCaesar()">
+                            <i class="fas fa-broom"></i> Clear
+                        </button>
+                        <button class="btn secondary" onclick="analyzeFrequency('caesar-input')">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="output-section">
+                        <label for="caesar-output">
+                            <i class="fas fa-file-alt"></i> Output:
+                        </label>
+                        <textarea id="caesar-output" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="caesar-results" class="results-section"></div>
+            </div>
+
+            <!-- Vigenère Cipher Tab -->
+            <div id="vigenere" class="cipher-panel">
+                <div class="panel-header">
+                    <h2>Vigenère Cipher</h2>
+                    <p>Polyalphabetic substitution cipher using a keyword</p>
+                </div>
+                
+                <div class="cipher-controls">
+                    <div class="control-group">
+                        <label for="vigenere-operation">Operation:</label>
+                        <select id="vigenere-operation">
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                            <option value="analyze">Frequency Analysis Attack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="vigenere-key-group">
+                        <label for="vigenere-key">Key:</label>
+                        <input type="text" id="vigenere-key" placeholder="Enter keyword">
+                    </div>
+                </div>
+
+                <div class="io-section">
+                    <div class="input-section">
+                        <label for="vigenere-input">
+                            <i class="fas fa-edit"></i> Input Text:
+                        </label>
+                        <textarea id="vigenere-input" placeholder="Enter your text here..."></textarea>
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="btn primary" onclick="processVigenere()">
+                            <i class="fas fa-play"></i> Process
+                        </button>
+                        <button class="btn secondary" onclick="clearVigenere()">
+                            <i class="fas fa-broom"></i> Clear
+                        </button>
+                        <button class="btn secondary" onclick="analyzeFrequency('vigenere-input')">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="output-section">
+                        <label for="vigenere-output">
+                            <i class="fas fa-file-alt"></i> Output:
+                        </label>
+                        <textarea id="vigenere-output" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="vigenere-results" class="results-section"></div>
+            </div>
+
+            <!-- Affine Cipher Tab -->
+            <div id="affine" class="cipher-panel">
+                <div class="panel-header">
+                    <h2>Affine Cipher</h2>
+                    <p>Mathematical cipher: E(x) = (ax + b) mod 26</p>
+                </div>
+                
+                <div class="cipher-controls">
+                    <div class="control-group">
+                        <label for="affine-operation">Operation:</label>
+                        <select id="affine-operation">
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                            <option value="brute-force">Brute Force Attack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="affine-a-group">
+                        <label for="affine-a">Key 'a' (coprime with 26):</label>
+                        <select id="affine-a">
+                            <option value="1">1</option>
+                            <option value="3">3</option>
+                            <option value="5">5</option>
+                            <option value="7">7</option>
+                            <option value="9">9</option>
+                            <option value="11">11</option>
+                            <option value="15">15</option>
+                            <option value="17">17</option>
+                            <option value="19">19</option>
+                            <option value="21">21</option>
+                            <option value="23">23</option>
+                            <option value="25">25</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="affine-b-group">
+                        <label for="affine-b">Key 'b':</label>
+                        <input type="number" id="affine-b" min="0" max="25" value="0">
+                    </div>
+                </div>
+
+                <div class="io-section">
+                    <div class="input-section">
+                        <label for="affine-input">
+                            <i class="fas fa-edit"></i> Input Text:
+                        </label>
+                        <textarea id="affine-input" placeholder="Enter your text here..."></textarea>
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="btn primary" onclick="processAffine()">
+                            <i class="fas fa-play"></i> Process
+                        </button>
+                        <button class="btn secondary" onclick="clearAffine()">
+                            <i class="fas fa-broom"></i> Clear
+                        </button>
+                        <button class="btn secondary" onclick="analyzeFrequency('affine-input')">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="output-section">
+                        <label for="affine-output">
+                            <i class="fas fa-file-alt"></i> Output:
+                        </label>
+                        <textarea id="affine-output" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="affine-results" class="results-section"></div>
+            </div>
+
+            <!-- Playfair Cipher Tab -->
+            <div id="playfair" class="cipher-panel">
+                <div class="panel-header">
+                    <h2>Playfair Cipher</h2>
+                    <p>Digraph substitution cipher using a 5×5 grid</p>
+                </div>
+                
+                <div class="cipher-controls">
+                    <div class="control-group">
+                        <label for="playfair-operation">Operation:</label>
+                        <select id="playfair-operation">
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="playfair-key">Key:</label>
+                        <input type="text" id="playfair-key" placeholder="Enter keyword">
+                    </div>
+                </div>
+
+                <div class="io-section">
+                    <div class="input-section">
+                        <label for="playfair-input">
+                            <i class="fas fa-edit"></i> Input Text:
+                        </label>
+                        <textarea id="playfair-input" placeholder="Enter your text here..."></textarea>
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="btn primary" onclick="processPlayfair()">
+                            <i class="fas fa-play"></i> Process
+                        </button>
+                        <button class="btn secondary" onclick="clearPlayfair()">
+                            <i class="fas fa-broom"></i> Clear
+                        </button>
+                        <button class="btn secondary" onclick="analyzeFrequency('playfair-input')">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="output-section">
+                        <label for="playfair-output">
+                            <i class="fas fa-file-alt"></i> Output:
+                        </label>
+                        <textarea id="playfair-output" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="playfair-square" class="playfair-grid"></div>
+                <div id="playfair-results" class="results-section"></div>
+            </div>
+
+            <!-- Monoalphabetic Cipher Tab -->
+            <div id="monoalphabetic" class="cipher-panel">
+                <div class="panel-header">
+                    <h2>Monoalphabetic Substitution Cipher</h2>
+                    <p>Each letter is replaced by another letter consistently</p>
+                </div>
+                
+                <div class="cipher-controls">
+                    <div class="control-group">
+                        <label for="mono-operation">Operation:</label>
+                        <select id="mono-operation">
+                            <option value="generate">Generate Random Key</option>
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                            <option value="analyze">Frequency Analysis Attack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group" id="mono-key-group">
+                        <label for="mono-key">Substitution Key (26 letters):</label>
+                        <input type="text" id="mono-key" placeholder="Enter custom key or generate random key above" maxlength="26">
+                        <small>Each letter A-Z should appear exactly once. Generated keys will appear here.</small>
+                    </div>
+                </div>
+
+                <div class="io-section">
+                    <div class="input-section">
+                        <label for="mono-input">
+                            <i class="fas fa-edit"></i> Input Text:
+                        </label>
+                        <textarea id="mono-input" placeholder="Enter your text here..."></textarea>
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="btn primary" onclick="processMonoalphabetic()">
+                            <i class="fas fa-play"></i> Process
+                        </button>
+                        <button class="btn secondary" onclick="clearMonoalphabetic()">
+                            <i class="fas fa-broom"></i> Clear
+                        </button>
+                        <button class="btn secondary" onclick="analyzeFrequency('mono-input')">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="output-section">
+                        <label for="mono-output">
+                            <i class="fas fa-file-alt"></i> Output:
+                        </label>
+                        <textarea id="mono-output" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="mono-key-display" class="key-display"></div>
+                <div id="mono-results" class="results-section"></div>
+            </div>
+
+            <!-- Rail Fence Cipher Tab -->
+            <div id="railfence" class="cipher-panel">
+                <div class="panel-header">
+                    <h2>Rail Fence Cipher</h2>
+                    <p>Transposition cipher using a zigzag pattern</p>
+                </div>
+                
+                <div class="cipher-controls">
+                    <div class="control-group">
+                        <label for="railfence-operation">Operation:</label>
+                        <select id="railfence-operation">
+                            <option value="encrypt">Encrypt</option>
+                            <option value="decrypt">Decrypt</option>
+                        </select>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="railfence-rails">Number of Rails:</label>
+                        <input type="number" id="railfence-rails" min="2" max="10" value="3">
+                    </div>
+                </div>
+
+                <div class="io-section">
+                    <div class="input-section">
+                        <label for="railfence-input">
+                            <i class="fas fa-edit"></i> Input Text:
+                        </label>
+                        <textarea id="railfence-input" placeholder="Enter your text here..."></textarea>
+                    </div>
+                    
+                    <div class="button-section">
+                        <button class="btn primary" onclick="processRailFence()">
+                            <i class="fas fa-play"></i> Process
+                        </button>
+                        <button class="btn secondary" onclick="clearRailFence()">
+                            <i class="fas fa-broom"></i> Clear
+                        </button>
+                        <button class="btn secondary" onclick="analyzeFrequency('railfence-input')">
+                            <i class="fas fa-chart-bar"></i> Analyze
+                        </button>
+                    </div>
+                    
+                    <div class="output-section">
+                        <label for="railfence-output">
+                            <i class="fas fa-file-alt"></i> Output:
+                        </label>
+                        <textarea id="railfence-output" readonly></textarea>
+                    </div>
+                </div>
+
+                <div id="railfence-results" class="results-section"></div>
+            </div>
+        </main>
+
+        <!-- Frequency Analysis Modal -->
+        <div id="frequency-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Frequency Analysis</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div id="frequency-chart-container">
+                        <img id="frequency-chart" src="" alt="Frequency Chart">
+                    </div>
+                    <div id="frequency-data" class="frequency-table"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 
